@@ -1,0 +1,20 @@
+#Libraries should be configured through a vcpkg or makefile
+#The same applies to build files
+libraries
+build
+
+#It is recommended not clutter the repository with build files and local configurations
+*.exe
+*.out
+*.app
+*.obj
+*.o
+
+#The same applies to library files
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+
+*.config
