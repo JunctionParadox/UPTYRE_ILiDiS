@@ -1,4 +1,4 @@
-#Libraries should be configured through a pckv or makefile
+#Libraries should be configured through a vcpkg or makefile
 #The same applies to build files
 libraries
 build
