@@ -1,11 +1,15 @@
 #include <iostream>
 #include "gui.h" //Gui.cpp header file
 #include "winctrl.h" //Wincrtl.cpp header file
+#include "workflow.h"
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
+#ifndef WORKFLOW
+
 int main() {
+
     WndController wndcontrol = WndController();
     ImguiController imguicontrol = ImguiController();
 
@@ -45,3 +49,9 @@ int main() {
     imguicontrol.DestroyGui(wndcontrol.GetWndHWND());
     wndcontrol.WindowUnregister();
 }
+
+#else
+int main() {
+    WorkflowTest();
+}
+#endif
