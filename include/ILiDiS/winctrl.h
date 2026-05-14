@@ -1,9 +1,9 @@
-#ifndef _WIN32_WINNT
 //Imports Windows-XP header files when using <windows.h>
+#ifndef _WIN32_WINNT
 #define WIN32_WINNT 0x0501
 #endif
-#ifndef WIN32_LEAN_AND_MEAN
 //Prevent unneccesary segements from being imported
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 
