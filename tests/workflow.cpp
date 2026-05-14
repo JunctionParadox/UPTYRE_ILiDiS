@@ -1,4 +1,4 @@
-#ifndef WORKFLOW
+#ifdef WORKFLOW
 
 #include <iostream>
 #include "gui.h" //Gui.cpp header file

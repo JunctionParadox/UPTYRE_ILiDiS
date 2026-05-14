@@ -1,3 +1,3 @@
-#ifndef WORKFLOW
+#ifdef WORKFLOW
     int WorkflowTest();
 #endif
