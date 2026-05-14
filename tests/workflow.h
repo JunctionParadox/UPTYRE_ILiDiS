@@ -1,3 +1,3 @@
 #ifndef WORKFLOW
-static int WorkflowTest();
+    int WorkflowTest();
 #endif
