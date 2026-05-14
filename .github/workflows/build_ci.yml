@@ -20,7 +20,7 @@ jobs:
         
     - name: Download Dear ImGui Source
       run: |
-        git clone --depth 1 https://github.com/ocornut/imgui.git deps/imgui
+        git clone --depth 1 https://github.com/ocornut/imgui.git imgui
 
     - name: Compile application
       run: |
