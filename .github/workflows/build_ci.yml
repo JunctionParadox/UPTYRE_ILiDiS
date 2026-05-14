@@ -24,11 +24,7 @@ jobs:
 
     - name: Compile application
       run: |
-        g++ -I./imgui/ -I./imgui/backends/ -I./include/ILiDiS/ \
-        source/main.cpp source/gui.cpp source/winctrl.cpp \
-        ./imgui/imgui.cpp ./imgui/imgui_draw.cpp ./imgui/imgui_tables.cpp ./imgui/imgui_widgets.cpp \
-        ./imgui/backends/imgui_impl_dx11.cpp ./imgui/backends/imgui_impl_win32.cpp \
-        -o program.exe -ld3d11 -ld3dcompiler -lgdi32 -ldwmapi -lole32 -luuid
+        g++ -I./imgui/ -I./imgui/backends/ -I./include/ILiDiS/ source/main.cpp source/gui.cpp source/winctrl.cpp ./imgui/imgui.cpp ./imgui/imgui_draw.cpp ./imgui/imgui_tables.cpp ./imgui/imgui_widgets.cpp ./imgui/backends/imgui_impl_dx11.cpp ./imgui/backends/imgui_impl_win32.cpp -o program.exe -ld3d11 -ld3dcompiler -lgdi32 -ldwmapi -lole32 -luuid
         
     - name: Run executable
       run: ./program
