@@ -48,10 +48,13 @@ int main() {
     //Prompting a cleanup
     imguicontrol.DestroyGui(wndcontrol.GetWndHWND());
     wndcontrol.WindowUnregister();
+
+    return 0;
 }
 
 #else
 int main() {
     WorkflowTest();
+    return 0;
 }
 #endif

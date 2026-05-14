@@ -14,7 +14,7 @@
 //Albeit with one modification
 //There is no program lifecycle
 //Every function is tested only once
-static int WorkflowTest() {
+int WorkflowTest() {
     WndController wndcontrol = WndController();
     ImguiController imguicontrol = ImguiController();
 
@@ -42,6 +42,8 @@ static int WorkflowTest() {
     
     imguicontrol.DestroyGui(wndcontrol.GetWndHWND());
     wndcontrol.WindowUnregister();
+
+    return 0;
 }
 
 #endif
