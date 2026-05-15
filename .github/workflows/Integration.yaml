@@ -1,7 +1,15 @@
-name: Build CI
+name: Integration
 
 on:
   push:
+    branches:
+      - default
+    paths-ignore:
+      - '.github/**'
+      - 'documentation/**'
+      - '.gitignore'
+      - 'README.md'
+      - 'THIRD_PARTY_LICENSE.txt'
 
 jobs:
   build:
