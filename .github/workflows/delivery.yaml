@@ -1,6 +1,7 @@
 name: Delivery
 
 on:
+  workflow_dispatch: 
   workflow_run:
     workflows: ["Integration"]
     types:
