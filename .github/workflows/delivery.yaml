@@ -1,7 +1,6 @@
 name: Delivery
 
 on:
-  workflow_dispatch: 
   workflow_run:
     workflows: ["Integration"]
     types:
@@ -12,7 +11,7 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
-    #if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
