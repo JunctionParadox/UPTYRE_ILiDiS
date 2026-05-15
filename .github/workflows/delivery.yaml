@@ -14,6 +14,9 @@ jobs:
       contents: write
     #if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - name: Install compiler
         id: install_cc
         uses: rlalik/setup-cpp-compiler@master
