@@ -1,6 +1,10 @@
 name: Integration
 
 on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Manual run"
   push:
     branches:
       - default
