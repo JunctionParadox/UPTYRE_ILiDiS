@@ -19,17 +19,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-# Makes use of https://github.com/rlalik/setup-cpp-compiler
+    # Makes use of https://github.com/rlalik/setup-cpp-compiler
     - name: Install compiler
       id: install_cc
       uses: rlalik/setup-cpp-compiler@master
       with:
         compiler: latest
-        
+
+    # Download Dear Imgui library
     - name: Download Dear ImGui Source
       run: |
         git clone --depth 1 https://github.com/ocornut/imgui.git imgui
 
+    # -DWORKFLOW flag is needed to trigger special workflow variant of program
     - name: Compile application
       run: |
         g++ -DWORKFLOW -I./imgui/ -I./imgui/backends/ -I./include/ILiDiS/ -I./tests source/main.cpp source/gui.cpp source/winctrl.cpp tests/workflow.cpp ./imgui/imgui.cpp ./imgui/imgui_draw.cpp ./imgui/imgui_tables.cpp ./imgui/imgui_widgets.cpp ./imgui/backends/imgui_impl_dx11.cpp ./imgui/backends/imgui_impl_win32.cpp -o program.exe -ld3d11 -ld3dcompiler -lgdi32 -ldwmapi -lole32 -luuid
