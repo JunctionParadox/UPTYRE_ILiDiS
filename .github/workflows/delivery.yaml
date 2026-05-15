@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    #if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Install compiler
         id: install_cc
