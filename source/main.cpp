@@ -1,20 +1,38 @@
 #include <iostream>
+#include <functional>
 #include "gui.h" //Gui.cpp header file
 #include "winctrl.h" //Wincrtl.cpp header file
-#include "workflow.h"
+#include "filectrl.h" //Filectrl.cpp header file
+#include "texturectrl.h"
+//#include "workflow.h" //Workflow.cpp header file
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
 #ifndef WORKFLOW
 
+void InitCallbacks(ImguiController& imguicontrol, FileController& filecontrol, TextureController texturecontrol) {
+    imguicontrol.RegisterCallback([&filecontrol](ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
+        return filecontrol.SelectImage(d3d_device);
+    });
+    filecontrol.RegisterCallback([&texturecontrol](const wchar_t* filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
+        return texturecontrol.SetImageTexture(filepath, d3d_device);
+    });
+}
+
 int main() {
 
     WndController wndcontrol = WndController();
     ImguiController imguicontrol = ImguiController();
+    FileController filecontrol = FileController();
+    TextureController texturecontrol = TextureController();
+
+    InitCallbacks(imguicontrol, filecontrol, texturecontrol);
 
     //Initiate the Windows handler
     wndcontrol.WindowInit(imguicontrol.GetDpi());
+
+    texturecontrol.ResetShaderPointer();
 
     //Initiate the 3D DirectX11 engine
     if (!imguicontrol.CreateDeviceD3D(wndcontrol.GetWndHWND()))
