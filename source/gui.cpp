@@ -5,7 +5,10 @@
 #include <string.h>
 #include <d3d11.h>
 #include <tchar.h>
+#include <functional>
 #include <gui.h>
+
+#include <iostream>
 
 ID3D11Device* ImguiController::p_d3d_device_ = nullptr;
 ID3D11DeviceContext*  ImguiController::p_d3d_device_context_ = nullptr;
@@ -90,11 +93,35 @@ int ImguiController::RenderGui() {
         ImGui::SetNextWindowSize(ImVec2(380, 800), ImGuiCond_Always);
         ImGui::Begin("Main window", nullptr, window_flags_);
         ImGui::Text("This is a placeholder");
+        if (ImGui::Button("Upload image")) {
+            image_zero = nullptr;
+            if (callback) {
+                image_zero = callback(p_d3d_device_);
+                if (image_zero) 
+                {
+                    selected = true;
+                }
+                else 
+                {
+                    selected = false;
+                }
+            };
+        };
         ImGui::End();
 
         ImGui::SetNextWindowPos(ImVec2(380, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(440, 800), ImGuiCond_Always);
         ImGui::Begin("Image window", nullptr, window_flags_);
+        if (selected) {
+                ImGui::Image(
+                    image_zero,
+                    ImVec2(400, 400)
+                );
+            }
+            else {
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                draw_list->AddRectFilled({410, 10}, {810, 410}, IM_COL32(255, 255, 255, 255), 0.0f, 0);
+            }
         ImGui::End();
 
 
@@ -176,4 +203,12 @@ void ImguiController::CreateRenderTarget()
 void ImguiController::CleanupRenderTarget()
 {
     if (main_render_target_view_) { main_render_target_view_->Release(); main_render_target_view_ = nullptr; }
+}
+
+ID3D11Device* ImguiController::GetDevice() {
+    return p_d3d_device_;
+}
+
+void ImguiController::RegisterCallback(CallbackType callback_arg) {
+    callback = callback_arg;
 }

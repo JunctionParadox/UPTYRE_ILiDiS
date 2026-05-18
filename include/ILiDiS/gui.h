@@ -2,9 +2,13 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 #include <d3d11.h>
+#include <functional>
 
 class ImguiController {
     private:
+        using CallbackType = std::function<ID3D11ShaderResourceView*(ID3D11Device* d3d_device)>;
+        CallbackType callback;
+
         static ID3D11Device* p_d3d_device_;
         static ID3D11DeviceContext* p_d3d_device_context_;
         static IDXGISwapChain* p_swap_chain_;
@@ -25,6 +29,10 @@ class ImguiController {
         HRESULT res_;
         D3D_FEATURE_LEVEL feature_level_array_[2] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
 
+        ID3D11ShaderResourceView* image_zero;
+
+        bool selected;
+
     public:
         float GetDpi();
         int InitGui(HWND hWnd);
@@ -36,4 +44,6 @@ class ImguiController {
         void CleanupDeviceD3D();
         void CreateRenderTarget();
         void CleanupRenderTarget();
+        ID3D11Device* GetDevice();
+        void RegisterCallback(CallbackType callback_arg);
 };
