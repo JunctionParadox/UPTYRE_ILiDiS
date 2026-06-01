@@ -4,6 +4,7 @@
 #include "winctrl.h" //Wincrtl.cpp header file
 #include "filectrl.h" //Filectrl.cpp header file
 #include "texturectrl.h"
+#include "spectral.h"
 //#include "workflow.h" //Workflow.cpp header file
 #include "imgui.h"
 #include "imgui_impl_win32.h"
@@ -11,9 +12,11 @@
 
 #ifndef WORKFLOW
 
-void InitCallbacks(ImguiController& imguicontrol, FileController& filecontrol, TextureController texturecontrol) {
-    imguicontrol.RegisterCallback([&filecontrol](ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
-        return filecontrol.SelectImage(d3d_device);
+void InitCallbacks(ImguiController& imguicontrol, FileController& filecontrol, TextureController& texturecontrol, Spectral& spectre) {
+    imguicontrol.RegisterCallback([&filecontrol](wchar_t* &filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
+        return filecontrol.SelectImage(filepath, d3d_device);
+    }, [&spectre](wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV) -> bool {
+        return spectre.OnLoadAndProces(filename, device, outSRV);
     });
     filecontrol.RegisterCallback([&texturecontrol](const wchar_t* filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
         return texturecontrol.SetImageTexture(filepath, d3d_device);
@@ -26,8 +29,9 @@ int main() {
     ImguiController imguicontrol = ImguiController();
     FileController filecontrol = FileController();
     TextureController texturecontrol = TextureController();
+    Spectral spectre = Spectral();
 
-    InitCallbacks(imguicontrol, filecontrol, texturecontrol);
+    InitCallbacks(imguicontrol, filecontrol, texturecontrol, spectre);
 
     //Initiate the Windows handler
     wndcontrol.WindowInit(imguicontrol.GetDpi());

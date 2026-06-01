@@ -6,8 +6,12 @@
 
 class ImguiController {
     private:
-        using CallbackType = std::function<ID3D11ShaderResourceView*(ID3D11Device* d3d_device)>;
-        CallbackType callback;
+        //using ImgCallback = std::function<ID3D11ShaderResourceView*(const wchar_t*& filepath, ID3D11Device* d3d_device)>;
+        using ImgCallback = std::function<ID3D11ShaderResourceView*(wchar_t* &filepath, ID3D11Device* d3d_device)>;
+        ImgCallback m_imgcallback;
+
+        using SpectralCallback = std::function<bool(wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV)>;
+        SpectralCallback m_spectralcallback;
 
         static ID3D11Device* p_d3d_device_;
         static ID3D11DeviceContext* p_d3d_device_context_;
@@ -18,7 +22,7 @@ class ImguiController {
         static ID3D11RenderTargetView* main_render_target_view_;
 
         float main_scale_;
-        ImGuiIO io_;
+        ImGuiIO* io_ = nullptr;
         ImGuiWindowFlags window_flags_;
         ImGuiStyle style_;
         ImVec4 clear_color_;
@@ -30,8 +34,13 @@ class ImguiController {
         D3D_FEATURE_LEVEL feature_level_array_[2] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
 
         ID3D11ShaderResourceView* image_zero;
+        ID3D11ShaderResourceView* image_spectral;
+        wchar_t* filepath = nullptr;
+
 
         bool selected;
+        bool errormessage;
+        bool processed;
 
     public:
         float GetDpi();
@@ -45,5 +54,5 @@ class ImguiController {
         void CreateRenderTarget();
         void CleanupRenderTarget();
         ID3D11Device* GetDevice();
-        void RegisterCallback(CallbackType callback_arg);
+        void RegisterCallback(ImgCallback callback_arg, SpectralCallback callback_arg2);
 };
