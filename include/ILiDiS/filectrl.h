@@ -9,6 +9,6 @@ class FileController {
 
     public:
         HRESULT InitCom();
-        ID3D11ShaderResourceView* SelectImage(ID3D11Device* d3d_device);
+        ID3D11ShaderResourceView* SelectImage(wchar_t* &filepath, ID3D11Device* d3d_device);
         void RegisterCallback(CallbackType callback_arg);
 };

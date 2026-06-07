@@ -31,10 +31,10 @@ int ImguiController::InitGui(HWND hWnd) {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    io_ = ImGui::GetIO(); (void)io_;
+    io_ = &ImGui::GetIO(); (void)io_;
+    io_->IniFilename = nullptr; //Supresses creation of imgui.ini file
     window_flags_ = ImGuiWindowFlags(ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-    io_.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io_.IniFilename = nullptr;
+    io_->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 
     ImGui::StyleColorsDark();
@@ -82,7 +82,8 @@ int ImguiController::RenderGui() {
     ImGui::NewFrame();
     {
 
-        //Each window must start with ImGui::Being()
+        //To create a window
+        //Each window must start with ImGui::Begin()
         //Then add content (such as ImGui::Text())
         //Then close it with ImGui::End()
 
@@ -95,8 +96,8 @@ int ImguiController::RenderGui() {
         ImGui::Text("This is a placeholder");
         if (ImGui::Button("Upload image")) {
             image_zero = nullptr;
-            if (callback) {
-                image_zero = callback(p_d3d_device_);
+            if (m_imgcallback) {
+                image_zero = m_imgcallback(filepath, p_d3d_device_);
                 if (image_zero) 
                 {
                     selected = true;
@@ -107,6 +108,21 @@ int ImguiController::RenderGui() {
                 }
             };
         };
+        if (ImGui::Button("Process image")) {
+            if (selected) {
+                errormessage = false;
+                if (m_spectralcallback) {
+                    m_spectralcallback(filepath, p_d3d_device_, &image_spectral);
+                    processed = true;
+                }
+            }
+            else {
+                errormessage = true;
+            }
+        }
+        if (errormessage) {
+            ImGui::Text("No PNG has been selected. \n Please insert one.");
+        }
         ImGui::End();
 
         ImGui::SetNextWindowPos(ImVec2(380, 0), ImGuiCond_Always);
@@ -128,6 +144,16 @@ int ImguiController::RenderGui() {
         ImGui::SetNextWindowPos(ImVec2(820, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(380, 800), ImGuiCond_Always);
         ImGui::Begin("Process window", nullptr, window_flags_);
+         if (processed) {
+                ImGui::Image(
+                    image_spectral,
+                    ImVec2(400, 400)
+                );
+            }
+            else {
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                draw_list->AddRectFilled({410, 10}, {810, 410}, IM_COL32(255, 255, 255, 255), 0.0f, 0);
+            }
         ImGui::End();
     }
 
@@ -209,6 +235,7 @@ ID3D11Device* ImguiController::GetDevice() {
     return p_d3d_device_;
 }
 
-void ImguiController::RegisterCallback(CallbackType callback_arg) {
-    callback = callback_arg;
+void ImguiController::RegisterCallback(ImgCallback callback_arg, SpectralCallback callback_arg2) {
+    m_imgcallback = callback_arg;
+    m_spectralcallback = callback_arg2;
 }

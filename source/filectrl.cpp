@@ -12,7 +12,8 @@ HRESULT FileController::InitCom() {
     return hrCoInit;
 }
 
-ID3D11ShaderResourceView* FileController::SelectImage(ID3D11Device* d3d_device) {
+//NEED TO ADD .PNG CHECK WHEN TYPING FILE LOCATION MANUALLY
+ID3D11ShaderResourceView* FileController::SelectImage(wchar_t* &filepath, ID3D11Device* d3d_device) {
     hrCoInit = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     IFileOpenDialog *pFileOpen;
     COMDLG_FILTERSPEC rgSpec = {L"PNG", L"*.png"};
@@ -36,6 +37,7 @@ ID3D11ShaderResourceView* FileController::SelectImage(ID3D11Device* d3d_device) 
     if (callback) {
         image = callback(wOutputBuffer, d3d_device);
     }
+    filepath = wOutputBuffer;
     pItem->Release();
     pFileOpen->Release();
     CoTaskMemFree(pszFilePath);

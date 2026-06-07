@@ -25,11 +25,14 @@ bool WndController::WindowUnregister() {
 }
 
 
-//As a safety measure
-//The Windows handler is a private member of the WndController class
-//This means it can neither be read or written to outside of it's class
-//This function gives it a read-only availlability
-//Making sure other classes are still able to read the value
+/*  
+    As a safety measure
+    The Windows handler is a private member of the WndController class
+    This means it can neither be read or written to outside of it's own class
+    This function gives it a read-only availlability
+    Making sure other classes are still able to read the value
+    Despite it being inaccesible in a direct fashion 
+*/
 HWND WndController::GetWndHWND() {
     return hWnd_;
 };
