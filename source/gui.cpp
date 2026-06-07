@@ -112,7 +112,7 @@ int ImguiController::RenderGui() {
             if (selected) {
                 errormessage = false;
                 if (m_spectralcallback) {
-                    m_spectralcallback(filepath, p_d3d_device_, &image_spectral);
+                    m_spectralcallback(filepath, p_d3d_device_, &image_spectral, &spectral_result, fftresults);
                     processed = true;
                 }
             }
@@ -149,6 +149,22 @@ int ImguiController::RenderGui() {
                     image_spectral,
                     ImVec2(400, 400)
                 );
+                if (fftresults.classification_category == 0) {
+                    ImGui::Text("Identification result: Normal");
+                }
+                if (fftresults.classification_category == 1) {
+                    ImGui::Text("Identification result: Seal");
+                }
+                if (fftresults.classification_category == 2) {
+                    ImGui::Text("Identification result: Silent");
+                }
+                ImGui::Text("Mean value: %.6lf", fftresults.mean);
+                ImGui::Text("Variance value: %.6lf", fftresults.variance);
+                ImGui::Text("Skewness value: %.6lf", fftresults.skewness);
+                ImGui::Text("Kurtosis value: %.6lf", fftresults.kurtosis);
+                ImGui::Text("Lower frequency: %.6lf", fftresults.lowFreq);
+                ImGui::Text("Middle frequency: %.6lf", fftresults.midFreq);
+                ImGui::Text("High frequency: %.6lf", fftresults.highFreq);
             }
             else {
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();

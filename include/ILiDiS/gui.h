@@ -3,6 +3,7 @@
 #include "imgui_impl_dx11.h"
 #include <d3d11.h>
 #include <functional>
+#include "fftintel.h"
 
 class ImguiController {
     private:
@@ -10,7 +11,7 @@ class ImguiController {
         using ImgCallback = std::function<ID3D11ShaderResourceView*(wchar_t* &filepath, ID3D11Device* d3d_device)>;
         ImgCallback m_imgcallback;
 
-        using SpectralCallback = std::function<bool(wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV)>;
+        using SpectralCallback = std::function<bool(wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV, int* catergory_out, FFTintel& intel)>;
         SpectralCallback m_spectralcallback;
 
         static ID3D11Device* p_d3d_device_;
@@ -37,10 +38,12 @@ class ImguiController {
         ID3D11ShaderResourceView* image_spectral;
         wchar_t* filepath = nullptr;
 
+        FFTintel fftresults;
 
         bool selected;
         bool errormessage;
         bool processed;
+        int spectral_result;
 
     public:
         float GetDpi();

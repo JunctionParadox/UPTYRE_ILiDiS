@@ -5,17 +5,34 @@
 #include <cstdint>
 #include <cassert>
 #include <memory>
+#include <limits>
 #include "spectral.h"
+#include "fftintel.h"
 #include <wrl/client.h> //Uses ComPtr, might use later
+
+#include <iostream>
+
 
 const double PI = 3.14159265358979323846; //A crass approximation of PI
 
-bool Spectral::OnLoadAndProces(wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV) {
+void Spectral::MapResult(Spectral::SpectralFeatures features, FFTintel& intel)
+{
+    intel.mean = features.mean;
+    intel.variance = features.variance;
+    intel.skewness = features.skewness;
+    intel.kurtosis = features.kurtosis;
+    intel.lowFreq = features.lowFreq;
+    intel.midFreq = features.midFreq;
+    intel.highFreq = features.highFreq;
+}
+
+bool Spectral::OnLoadAndProces(wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV, int* catergory_out, FFTintel& intel) {
         *outSRV = nullptr;
 
         // 1. Load grayscale float data from PNG
         std::vector<float> imageFloat;
         int imgW, imgH;
+        //std::cout << filename << std::endl;
         if (!loadPNGGraysafe(filename, imageFloat, imgW, imgH)) {
             return false;
         }
@@ -23,12 +40,83 @@ bool Spectral::OnLoadAndProces(wchar_t* filename, ID3D11Device* device, ID3D11Sh
         // 2. Compute FFT magnitude spectrum (returns normalized uint8)
         int specW, specH;
         auto specPixels = computeSpectralImage(imageFloat, imgW, imgH, specW, specH);
+        auto result = ComputeSpectralFeatures(imageFloat, imgW, imgH);
+        std::cout << result.mean << std::endl;
+        std::cout << result.variance << std::endl;
+        std::cout << result.skewness << std::endl;
+        std::cout << result.kurtosis << std::endl;
+        std::cout << result.lowFreq << std::endl;
+        std::cout << result.midFreq << std::endl;
+        std::cout << result.highFreq << std::endl;
+        MapResult(result, intel);
+        CentroidClassifier classifier;
+        SpectralFeatures proto0 = MapFeatures(
+            0.254519,
+            0.00581227,
+            0.263609,
+            0.724773,
+            0.268715,
+            0.470693,
+            0.260592
+        );
+        SpectralFeatures proto1 = MapFeatures(
+            0.272319,
+            0.00564726,
+            -0.242476,
+            0.262068,
+            0.204377,
+            0.551572,
+            0.244051
+        );
+        SpectralFeatures proto2 = MapFeatures(
+            0.21867,
+            0.00477841,
+            0.14812,
+            -0.125474,
+            0.240785,
+            0.523702,
+            0.235514
+        );
+        //SpectralFeatures proto0 = ComputeSpectralFeatures(image0, w0, h0);
+        //SpectralFeatures proto1 = ComputeSpectralFeatures(image1, w1, h1);
+        //SpectralFeatures proto2 = ComputeSpectralFeatures(image2, w2, h2);
+        classifier.setPrototypes(proto0, proto1, proto2);
+        int category = classifier.classify(result);
+        intel.classification_category = category;
+        std::cout << "----" << std::endl;
+        std::cout << category << std::endl;
+        switch(category) {
+            case 0: 
+                std::cout << "Category: Normal" << std::endl;
+                break;
+            case 1: 
+                std::cout << "Category: Seal" << std::endl;
+                break;
+            case 2: 
+                std::cout << "Category Silent" << std::endl;
+                break;
+            default:
+                std::cout << "Unfortunately, something went wrong" << std::endl;
+                break;
+        }
 
         // 3. Create D3D11 texture from 8‑bit grayscale data
         if (!CreateTextureFromGray8(device, specPixels, specW, specH, outSRV)) {
             return false;
         }
         return true;
+}
+
+Spectral::SpectralFeatures Spectral::MapFeatures(double one, double two, double three, double four, double five, double six, double seven) {
+    SpectralFeatures spec;
+    spec.mean = one;
+    spec.variance = two;
+    spec.skewness = three;
+    spec.kurtosis = four;
+    spec.lowFreq = five;
+    spec.midFreq = six;
+    spec.highFreq = seven;
+    return spec;
 }
 
 bool Spectral::loadPNGGraysafe(wchar_t* filename, std::vector<float>& out, int& outW, int& outH) {
@@ -302,6 +390,83 @@ std::vector<uint8_t> Spectral::computeSpectralImage(const std::vector<float>& in
         out[i] = (uint8_t)val;
     }
     return out;
+}
+
+Spectral::SpectralFeatures Spectral::ComputeSpectralFeatures(const std::vector<float>& input, int inW, int inH) {
+    // 1. Pad to power of two (same as your computeSpectralImage)
+    int w = nextPowerOfTwo(inW);
+    int h = nextPowerOfTwo(inH);
+    std::vector<Complex> buffer(w * h, Complex(0.0, 0.0));
+    for (int y = 0; y < inH; ++y)
+        for (int x = 0; x < inW; ++x)
+            buffer[y * w + x] = Complex(input[y * inW + x], 0.0);
+
+    // 2. Run 2D FFT
+    fft2D(buffer, w, h);
+
+    // 3. Shift DC to centre
+    std::vector<Complex> shifted(w * h);
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x) {
+            int sx = (x + w/2) % w;
+            int sy = (y + h/2) % h;
+            shifted[sy * w + sx] = buffer[y * w + x];
+        }
+
+    // 4. Compute log-magnitude (double) and store in a 2D array
+    std::vector<double> mag(w * h);
+    double maxMag = 0.0;
+    for (int i = 0; i < w * h; ++i) {
+        double a = std::abs(shifted[i]);
+        mag[i] = std::log(1.0 + a);
+        if (mag[i] > maxMag) maxMag = mag[i];
+    }
+
+    // 5. Compute moments from the whole magnitude array
+    double sum = 0.0, sumSq = 0.0, sumCb = 0.0, sumQd = 0.0;
+    int n = w * h;
+    for (int i = 0; i < n; ++i) {
+        double v = mag[i] / maxMag;  // normalize to [0,1] – helps stability
+        sum   += v;
+        sumSq += v * v;
+        sumCb += v * v * v;
+        sumQd += v * v * v * v;
+    }
+    double mean = sum / n;
+    double var  = (sumSq / n) - (mean * mean);
+    // Sample skewness and excess kurtosis (biased, but fine for comparison)
+    double skewness = (sumCb / n - 3.0 * mean * (sumSq / n) + 2.0 * mean * mean * mean) /
+                      (var * std::sqrt(var) + 1e-12);
+    double kurtosis = (sumQd / n - 4.0 * mean * (sumCb / n) + 6.0 * mean * mean * (sumSq / n) - 3.0 * mean * mean * mean * mean) /
+                      (var * var + 1e-12) - 3.0; // subtract 3 for excess
+
+    // 6. Radial energy bands
+    double cx = w * 0.5, cy = h * 0.5;
+    double maxR = std::sqrt(cx * cx + cy * cy); // half diagonal
+    double lowLimit = maxR / 3.0;
+    double midLimit = 2.0 * maxR / 3.0;
+
+    double lowSum = 0.0, midSum = 0.0, highSum = 0.0;
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x) {
+            double dx = x - cx, dy = y - cy;
+            double r = std::sqrt(dx * dx + dy * dy);
+            double v = mag[y * w + x]; // raw log-magnitude (not normalized)
+            if (r <= lowLimit)      lowSum  += v;
+            else if (r <= midLimit) midSum  += v;
+            else                    highSum += v;
+        }
+    double totalEnergy = lowSum + midSum + highSum + 1e-12;
+    SpectralFeatures fv;
+    fv.mean      = mean;
+    fv.variance  = var;
+    fv.skewness  = skewness;
+    fv.kurtosis  = kurtosis;
+    fv.lowFreq   = lowSum / totalEnergy;
+    fv.midFreq   = midSum / totalEnergy;
+    fv.highFreq  = highSum / totalEnergy;
+
+    return fv;
 }
 
 bool Spectral::CreateTextureFromGray8(ID3D11Device* device, const std::vector<uint8_t>& pixels, int w, int h, ID3D11ShaderResourceView** outSRV) {
