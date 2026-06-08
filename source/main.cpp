@@ -5,7 +5,8 @@
 #include "filectrl.h" //Filectrl.cpp header file
 #include "texturectrl.h"
 #include "spectral.h"
-//#include "workflow.h" //Workflow.cpp header file
+#include "fftintel.h"
+#include "workflow.h" //Workflow.cpp header file
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
@@ -15,8 +16,8 @@
 void InitCallbacks(ImguiController& imguicontrol, FileController& filecontrol, TextureController& texturecontrol, Spectral& spectre) {
     imguicontrol.RegisterCallback([&filecontrol](wchar_t* &filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
         return filecontrol.SelectImage(filepath, d3d_device);
-    }, [&spectre](wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV) -> bool {
-        return spectre.OnLoadAndProces(filename, device, outSRV);
+    }, [&spectre](wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV, int* category_out, FFTintel& intel) -> bool {
+        return spectre.OnLoadAndProces(filename, device, outSRV, category_out, intel);
     });
     filecontrol.RegisterCallback([&texturecontrol](const wchar_t* filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
         return texturecontrol.SetImageTexture(filepath, d3d_device);
