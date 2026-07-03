@@ -22,13 +22,15 @@ UINT ImguiController::resize_height_ = NULL;
 ID3D11RenderTargetView*  ImguiController::main_render_target_view_ = nullptr;
 
 
-float ImguiController::GetDpi() {
+float ImguiController::GetDpi() 
+{
     ImGui_ImplWin32_EnableDpiAwareness();
     main_scale_ = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0}, MONITOR_DEFAULTTOPRIMARY));
     return main_scale_;
 }
 
-void ApplyIndustrialTheme() {
+void ApplyIndustrialTheme() 
+{
     auto& style = ImGui::GetStyle();
     auto& colors = style.Colors;
 
@@ -58,7 +60,8 @@ void ApplyIndustrialTheme() {
     colors[ImGuiCol_HeaderHovered]    = ImVec4(0.20f, 0.40f, 0.70f, 1.00f);
 }
 
-int ImguiController::InitGui(HWND hWnd) {
+int ImguiController::InitGui(HWND hWnd) 
+{
     ::ShowWindow(hWnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hWnd);
 
@@ -86,7 +89,8 @@ int ImguiController::InitGui(HWND hWnd) {
     return 1;
 }
 
-void ImguiController::CheckSwapChain() {
+void ImguiController::CheckSwapChain() 
+{
     if (swap_chain_occluded_ && p_swap_chain_->Present(0, DXGI_PRESENT_TEST) == DXGI_STATUS_OCCLUDED) 
     {
         ::Sleep(10);
@@ -95,7 +99,8 @@ void ImguiController::CheckSwapChain() {
 }
 
 //Used when the lifecycle loop has ended
-int ImguiController::DestroyGui(HWND hWnd) {
+int ImguiController::DestroyGui(HWND hWnd) 
+{
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
@@ -108,7 +113,8 @@ int ImguiController::DestroyGui(HWND hWnd) {
 
 //Function that triggers that every loop to render the GUI
 //And any changes that have been made
-int ImguiController::RenderGui() {
+int ImguiController::RenderGui() 
+{
 
     //ImGui::NewFrame indicates a new frame has to be constructed
     //ImGui_ImplDX11_NewFrame() and ImGui_ImplWin32() MUST be called beforehand
@@ -130,13 +136,20 @@ int ImguiController::RenderGui() {
         ImGui::SetNextWindowSize(ImVec2(320, 800), ImGuiCond_Always);
         ImGui::Begin("Main window", nullptr, window_flags_);
         ImGui::Text("This is a placeholder");
-        if (ImGui::Button("Select image")) {
+        if (ImGui::Button("Select image")) 
+        {
             image_zero = nullptr;
-            if (m_imgcallback) {
+            if (m_imgcallback) 
+            {
                 image_cluster.clear();
                 ImageRecord image_input = ImageRecord(nullptr, nullptr);
                 image_input = m_imgcallback(filepath, p_d3d_device_);
-                image_cluster.emplace_back(image_input);
+                if (image_input.image_srv != nullptr) {
+                    image_cluster.emplace_back(image_input);
+                }
+                else {
+                    image_cluster.clear();
+                }
                 if (!image_cluster.empty()) 
                 {
                     selected = true;
@@ -148,9 +161,11 @@ int ImguiController::RenderGui() {
                 }
             };
         };
-        if (ImGui::Button("Batch select image")) {
+        if (ImGui::Button("Batch select image")) 
+        {
             image_zero = nullptr;
-            if (m_imgcallbackcluster) {
+            if (m_imgcallbackcluster) 
+            {
                 image_cluster.clear();
                 image_cluster = m_imgcallbackcluster(p_d3d_device_);
                 if (!image_cluster.empty()) 
@@ -187,7 +202,8 @@ int ImguiController::RenderGui() {
                 });
                 worker.detach();
             }
-            else if (selected && !running) {
+            else if (selected && !running) 
+            {
                 errormessage = false;
 
                 if (m_spectralcallback) {
@@ -228,7 +244,8 @@ int ImguiController::RenderGui() {
         ImGui::SetNextWindowPos(ImVec2(760, 0), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(440, 800), ImGuiCond_Always);
         ImGui::Begin("Process window", nullptr, window_flags_);
-         if (processed) {
+         if (processed) 
+         {
                 ImGui::Image(
                     image_spectral,
                     ImVec2(400, 400)
@@ -272,7 +289,8 @@ int ImguiController::RenderGui() {
 
 //Swap chain resizing procedure for when the window resizes
 //Technically irrelevant as resizing is currently disabled
-void ImguiController::ResizeGui() {
+void ImguiController::ResizeGui() 
+{
     CleanupRenderTarget();
     p_swap_chain_->ResizeBuffers(0, resize_width_ , resize_height_ , DXGI_FORMAT_UNKNOWN, 0);
     resize_width_  = resize_height_  = 0;
@@ -331,11 +349,13 @@ void ImguiController::CleanupRenderTarget()
     if (main_render_target_view_) { main_render_target_view_->Release(); main_render_target_view_ = nullptr; }
 }
 
-ID3D11Device* ImguiController::GetDevice() {
+ID3D11Device* ImguiController::GetDevice() 
+{
     return p_d3d_device_;
 }
 
-void ImguiController::RegisterCallback(ImgCallback callback_arg, ImgCallbackCluster callback_arg2, SpectralCallback callback_arg3) {
+void ImguiController::RegisterCallback(ImgCallback callback_arg, ImgCallbackCluster callback_arg2, SpectralCallback callback_arg3) 
+{
     m_imgcallback = callback_arg;
     m_imgcallbackcluster = callback_arg2;
     m_spectralcallback = callback_arg3;

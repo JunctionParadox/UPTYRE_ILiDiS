@@ -4,9 +4,11 @@
 #include <limits>
 #include "fftintel.h"
 
-class Spectral {
+class Spectral 
+{
     public:
-        struct SpectralFeatures {
+        struct SpectralFeatures 
+        {
             double mean = 0.0;       // mean of log-magnitude
             double variance = 0.0;   // variance
             double skewness = 0.0;   // skewness
@@ -16,7 +18,8 @@ class Spectral {
             double highFreq = 0.0;   // high radial band
 
         // Euclidean distance squared (no sqrt needed for comparison)
-        double distSq(const SpectralFeatures& other) const {
+        double distSq(const SpectralFeatures& other) const 
+        {
                 double d = 0.0;
                 d += (mean      - other.mean)      * (mean      - other.mean);
                 d += (variance  - other.variance)  * (variance  - other.variance);
@@ -34,17 +37,20 @@ class Spectral {
 
     private:
         // Simple nearest‑centroid classifier
-        class CentroidClassifier {
+        class CentroidClassifier 
+        {
             public:
                 // Set the three prototypes – call this once during init
-                void setPrototypes(const SpectralFeatures& cat0, const SpectralFeatures& cat1, const SpectralFeatures& cat2) {
+                void setPrototypes(const SpectralFeatures& cat0, const SpectralFeatures& cat1, const SpectralFeatures& cat2) 
+                {
                     prototypes_[0] = cat0;
                     prototypes_[1] = cat1;
                     prototypes_[2] = cat2;
                 }
 
                 // Classify a feature vector – returns 0, 1, or 2
-                int classify(const SpectralFeatures& query) const {
+                int classify(const SpectralFeatures& query) const 
+                {
                     double bestDist = (std::numeric_limits<double>::max)();
                     int bestClass = -1;
                     for (int i = 0; i < 3; ++i) {
@@ -55,7 +61,7 @@ class Spectral {
                         }
                     }
                     return bestClass;
-            }
+                }
 
             private:
                 SpectralFeatures prototypes_[3];

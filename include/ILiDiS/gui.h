@@ -6,7 +6,8 @@
 #include "fftintel.h"
 #include "imgrec.h"
 
-class ImguiController {
+class ImguiController 
+{
     private:
         //using ImgCallback = std::function<ID3D11ShaderResourceView*(const wchar_t*& filepath, ID3D11Device* d3d_device)>;
         using ImgCallback = std::function<ImageRecord(wchar_t* &filepath, ID3D11Device* d3d_device)>;

@@ -9,7 +9,8 @@
 
 using Microsoft::WRL::ComPtr;
 
-ID3D11ShaderResourceView* TextureController::SetImageTexture(const wchar_t* image_file, ID3D11Device* d3d_device) {
+ID3D11ShaderResourceView* TextureController::SetImageTexture(const wchar_t* image_file, ID3D11Device* d3d_device) 
+{
     //std::cout << "CHECK 0.5" <<std::endl;
     std::cout << image_file <<std::endl;
     //std::cout << "CHECK 1" <<std::endl;
@@ -75,6 +76,7 @@ ID3D11ShaderResourceView* TextureController::SetImageTexture(const wchar_t* imag
     return m_textureSRV;
 }
 
-void TextureController::ResetShaderPointer() {
+void TextureController::ResetShaderPointer() 
+{
     m_textureSRV = nullptr;
 }

@@ -1,7 +1,8 @@
 #ifndef FFTINTEL_H
 #define FFTINTEL_H
 
-struct FFTintel {
+struct FFTintel 
+{
     public:
         int classification_category;
         double mean = 0.0;       // mean of log-magnitude

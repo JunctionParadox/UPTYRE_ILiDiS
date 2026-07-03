@@ -1,9 +1,9 @@
 #include <d3d11.h>
 
-class TextureController {
+class TextureController 
+{
     private:
         ID3D11ShaderResourceView* m_textureSRV = nullptr;
-;
 
     public: 
         HRESULT hResult;

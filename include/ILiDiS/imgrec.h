@@ -3,7 +3,8 @@
 
 #include <d3d11.h>
 
-struct ImageRecord {
+struct ImageRecord 
+{
     ID3D11ShaderResourceView* image_srv;
     wchar_t* filepath;
 
