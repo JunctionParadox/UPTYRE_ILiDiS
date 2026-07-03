@@ -2,7 +2,8 @@ name: Delivery
 
 on:
   workflow_run:
-    workflows: ["Integration"]
+    workflows: 
+      ["Integration_quick", "Integration"]
     types:
       - completed
 
