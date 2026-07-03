@@ -1,4 +1,4 @@
-name: Integration_quick
+name: Integration_lightweight
 
 on:
   workflow_dispatch:
