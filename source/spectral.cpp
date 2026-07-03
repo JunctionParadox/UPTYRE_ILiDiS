@@ -28,7 +28,6 @@ void Spectral::MapResult(Spectral::SpectralFeatures features, FFTintel& intel)
 
 bool Spectral::OnLoadAndProces(wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV, int* catergory_out, FFTintel& intel) {
         *outSRV = nullptr;
-
         // 1. Load grayscale float data from PNG
         std::vector<float> imageFloat;
         int imgW, imgH;
@@ -36,11 +35,11 @@ bool Spectral::OnLoadAndProces(wchar_t* filename, ID3D11Device* device, ID3D11Sh
         if (!loadPNGGraysafe(filename, imageFloat, imgW, imgH)) {
             return false;
         }
-
         // 2. Compute FFT magnitude spectrum (returns normalized uint8)
         int specW, specH;
         auto specPixels = computeSpectralImage(imageFloat, imgW, imgH, specW, specH);
         auto result = ComputeSpectralFeatures(imageFloat, imgW, imgH);
+        std::cout << "----" << std::endl;
         std::cout << result.mean << std::endl;
         std::cout << result.variance << std::endl;
         std::cout << result.skewness << std::endl;
@@ -83,7 +82,7 @@ bool Spectral::OnLoadAndProces(wchar_t* filename, ID3D11Device* device, ID3D11Sh
         classifier.setPrototypes(proto0, proto1, proto2);
         int category = classifier.classify(result);
         intel.classification_category = category;
-        std::cout << "----" << std::endl;
+        std::cout << "" << std::endl;
         std::cout << category << std::endl;
         switch(category) {
             case 0: 
@@ -99,6 +98,7 @@ bool Spectral::OnLoadAndProces(wchar_t* filename, ID3D11Device* device, ID3D11Sh
                 std::cout << "Unfortunately, something went wrong" << std::endl;
                 break;
         }
+        std::cout << "----" << std::endl;
 
         // 3. Create D3D11 texture from 8‑bit grayscale data
         if (!CreateTextureFromGray8(device, specPixels, specW, specH, outSRV)) {

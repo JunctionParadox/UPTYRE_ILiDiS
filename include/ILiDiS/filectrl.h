@@ -1,5 +1,6 @@
 #include <functional>
 #include <d3d11.h>
+#include "imgrec.h"
 
 class FileController {
     private:
@@ -9,6 +10,7 @@ class FileController {
 
     public:
         HRESULT InitCom();
-        ID3D11ShaderResourceView* SelectImage(wchar_t* &filepath, ID3D11Device* d3d_device);
+        ImageRecord SelectImage(wchar_t* &filepath, ID3D11Device* d3d_device);
+        std::vector<ImageRecord> SelectCluster(ID3D11Device* d3d_device);
         void RegisterCallback(CallbackType callback_arg);
 };

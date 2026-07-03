@@ -4,15 +4,20 @@
 #include <d3d11.h>
 #include <functional>
 #include "fftintel.h"
+#include "imgrec.h"
 
 class ImguiController {
     private:
         //using ImgCallback = std::function<ID3D11ShaderResourceView*(const wchar_t*& filepath, ID3D11Device* d3d_device)>;
-        using ImgCallback = std::function<ID3D11ShaderResourceView*(wchar_t* &filepath, ID3D11Device* d3d_device)>;
+        using ImgCallback = std::function<ImageRecord(wchar_t* &filepath, ID3D11Device* d3d_device)>;
         ImgCallback m_imgcallback;
+
+        using ImgCallbackCluster = std::function<std::vector<ImageRecord>(ID3D11Device* d3d_device)>;
+        ImgCallbackCluster m_imgcallbackcluster;
 
         using SpectralCallback = std::function<bool(wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV, int* catergory_out, FFTintel& intel)>;
         SpectralCallback m_spectralcallback;
+
 
         static ID3D11Device* p_d3d_device_;
         static ID3D11DeviceContext* p_d3d_device_context_;
@@ -36,6 +41,7 @@ class ImguiController {
 
         ID3D11ShaderResourceView* image_zero;
         ID3D11ShaderResourceView* image_spectral;
+        std::vector<ImageRecord> image_cluster;
         wchar_t* filepath = nullptr;
 
         FFTintel fftresults;
@@ -43,6 +49,8 @@ class ImguiController {
         bool selected;
         bool errormessage;
         bool processed;
+        bool running;
+        bool clustered;
         int spectral_result;
 
     public:
@@ -57,5 +65,5 @@ class ImguiController {
         void CreateRenderTarget();
         void CleanupRenderTarget();
         ID3D11Device* GetDevice();
-        void RegisterCallback(ImgCallback callback_arg, SpectralCallback callback_arg2);
+        void RegisterCallback(ImgCallback callback_arg, ImgCallbackCluster callback_arg2, SpectralCallback callback_arg3);
 };
