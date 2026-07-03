@@ -32,6 +32,14 @@ jobs:
       run: |
         git clone --depth 1 https://github.com/ocornut/imgui.git imgui
 
+    - name: Install Cppcheck
+      run: |
+        sudo apt-get install -y cppcheck
+
+    - name: Run Cppcheck
+      run: |
+        cppcheck --enable=all --error-exitcode=1 .
+
     # -DWORKFLOW flag is needed to trigger special workflow variant of program
     - name: Compile application
       run: |
