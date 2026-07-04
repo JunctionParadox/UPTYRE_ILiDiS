@@ -18,3 +18,5 @@ build
 *.dylib
 
 *.config
+
+compile.md

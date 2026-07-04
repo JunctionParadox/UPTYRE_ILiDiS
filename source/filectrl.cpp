@@ -7,44 +7,122 @@
 #include <d3d11.h>
 #include <iostream>
 
-HRESULT FileController::InitCom() {
+HRESULT FileController::InitCom() 
+{
     hrCoInit = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     return hrCoInit;
 }
 
 //NEED TO ADD .PNG CHECK WHEN TYPING FILE LOCATION MANUALLY
-ID3D11ShaderResourceView* FileController::SelectImage(wchar_t* &filepath, ID3D11Device* d3d_device) {
+ImageRecord FileController::SelectImage(wchar_t* &filepath, ID3D11Device* d3d_device) 
+{
     hrCoInit = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     IFileOpenDialog *pFileOpen;
     COMDLG_FILTERSPEC rgSpec = {L"PNG", L"*.png"};
+
     hrCoInit = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
     hrCoInit = pFileOpen->SetFileTypes(1, &rgSpec);
     hrCoInit = pFileOpen->Show(NULL);
+
     IShellItem *pItem;
     hrCoInit = pFileOpen->GetResult(&pItem);
-    if (SUCCEEDED(hrCoInit)) {
 
+    if (FAILED(hrCoInit))
+    {
+        pFileOpen->Release();
+        CoUninitialize();
+        return ImageRecord(nullptr, nullptr); //Prevents program from crashing when nothing is selected
     }
-    else {
-        return nullptr;
-    }
+
     PWSTR pszFilePath;
     hrCoInit = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+    //Check if selected file is a PNG
+    bool isValidPng = false;
+    wchar_t* dot = wcsrchr(pszFilePath, L'.');
+    if (dot != nullptr && _wcsicmp(dot, L".png") == 0) 
+    {
+        isValidPng = true;
+    }
+    
+    if (!isValidPng) 
+    {
+        pItem->Release();
+        pFileOpen->Release();
+        CoTaskMemFree(pszFilePath);
+        CoUninitialize();
+        return ImageRecord(nullptr, nullptr); //Prevents program from crashing when a non-PNG is selected
+    }
+
     size_t length = wcslen(pszFilePath) + 1;
     wchar_t* wOutputBuffer = new wchar_t[length];
     wcscpy_s(wOutputBuffer, length, pszFilePath);
     ID3D11ShaderResourceView *image;
-    if (callback) {
+
+    if (callback) 
+    {
         image = callback(wOutputBuffer, d3d_device);
     }
+
     filepath = wOutputBuffer;
+    ImageRecord record = ImageRecord(image, filepath);
     pItem->Release();
     pFileOpen->Release();
     CoTaskMemFree(pszFilePath);
     CoUninitialize();
-    return image;
+    return record;
 }
 
-void FileController::RegisterCallback(CallbackType callback_arg) {
+std::vector<ImageRecord> FileController::SelectCluster(ID3D11Device* d3d_device)
+{
+    hrCoInit = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    IFileOpenDialog *pFileOpen;
+    COMDLG_FILTERSPEC rgSpec = {L"PNG", L"*.png"};
+    DWORD dwOptions;
+    hrCoInit = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+    hrCoInit = pFileOpen->GetOptions(&dwOptions);
+    hrCoInit = pFileOpen->SetOptions(dwOptions | FOS_ALLOWMULTISELECT);
+    hrCoInit = pFileOpen->SetFileTypes(1, &rgSpec);
+    hrCoInit = pFileOpen->Show(NULL);
+    IShellItemArray *pItemArray;
+    hrCoInit = pFileOpen->GetResults(&pItemArray);
+
+    if (FAILED(hrCoInit))
+    {
+        pFileOpen->Release();
+        CoUninitialize();
+        return {}; //Prevents program from crashing when nothing is selected
+    }
+
+    IEnumShellItems *pEnumArray;
+    hrCoInit = pItemArray->EnumItems(&pEnumArray);
+    IShellItem *pItem;
+    PWSTR pszFilePath;
+    wchar_t* wOutputBuffer;
+    DWORD itemCount = 0;
+    hrCoInit = pItemArray->GetCount(&itemCount);
+    std::vector<ImageRecord> itemVector;
+    while(pEnumArray->Next(1, &pItem, NULL) == S_OK)
+    {
+        hrCoInit = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+        size_t length = wcslen(pszFilePath) + 1;
+        wOutputBuffer = new wchar_t[length];
+        wcscpy_s(wOutputBuffer, length, pszFilePath);
+        ID3D11ShaderResourceView *image;
+        if (callback) 
+        {
+            image = callback(wOutputBuffer, d3d_device);
+            itemVector.emplace_back(image, wOutputBuffer);
+        }
+    };
+    pItem->Release();
+    pFileOpen->Release();
+    CoTaskMemFree(pszFilePath);
+    CoUninitialize();
+    return itemVector;
+}
+
+void FileController::RegisterCallback(CallbackType callback_arg) 
+{
     callback = callback_arg;
 }

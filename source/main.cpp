@@ -6,25 +6,33 @@
 #include "texturectrl.h"
 #include "spectral.h"
 #include "fftintel.h"
-#include "workflow.h" //Workflow.cpp header file
+//#include "workflow.h" //Workflow.cpp header file
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 
 #ifndef WORKFLOW
 
-void InitCallbacks(ImguiController& imguicontrol, FileController& filecontrol, TextureController& texturecontrol, Spectral& spectre) {
-    imguicontrol.RegisterCallback([&filecontrol](wchar_t* &filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
+void InitCallbacks(ImguiController& imguicontrol, FileController& filecontrol, TextureController& texturecontrol, Spectral& spectre) 
+{
+    imguicontrol.RegisterCallback([&filecontrol](wchar_t* &filepath, ID3D11Device* d3d_device) -> ImageRecord 
+    {
         return filecontrol.SelectImage(filepath, d3d_device);
-    }, [&spectre](wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV, int* category_out, FFTintel& intel) -> bool {
+    },[&filecontrol](ID3D11Device* device) -> std::vector<ImageRecord> 
+    {
+        return filecontrol.SelectCluster(device);
+    },[&spectre](wchar_t* filename, ID3D11Device* device, ID3D11ShaderResourceView** outSRV, int* category_out, FFTintel& intel) -> bool 
+    {
         return spectre.OnLoadAndProces(filename, device, outSRV, category_out, intel);
     });
-    filecontrol.RegisterCallback([&texturecontrol](const wchar_t* filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* {
+    filecontrol.RegisterCallback([&texturecontrol](const wchar_t* filepath, ID3D11Device* d3d_device) -> ID3D11ShaderResourceView* 
+    {
         return texturecontrol.SetImageTexture(filepath, d3d_device);
     });
 }
 
-int main() {
+int main() 
+{
 
     WndController wndcontrol = WndController();
     ImguiController imguicontrol = ImguiController();

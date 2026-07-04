@@ -12,14 +12,16 @@ LRESULT WINAPI WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //Initialize the window instance that needs to be rendered
-void WndController::WindowInit(float main_scale) {
+void WndController::WindowInit(float main_scale) 
+{
     wind_ = { sizeof(wind_), CS_CLASSDC, WindowProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"UPTYRE ILiDiS", nullptr};
     ::RegisterClassExW(&wind_);
     hWnd_ = ::CreateWindowW(wind_.lpszClassName, L"UPTYRE_ILiDiS", WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU, 100, 100, (int)(960 * main_scale), (int)(600 * main_scale), nullptr, nullptr, wind_.hInstance, nullptr);
 }
 
 //Practically extends the UnregisterClassW function to be made allable by gui.cpp without providing gui.cpp any context
-bool WndController::WindowUnregister() {
+bool WndController::WindowUnregister() 
+{
     bool result = ::UnregisterClassW(wind_.lpszClassName, wind_.hInstance);
     return result;
 }
@@ -33,11 +35,13 @@ bool WndController::WindowUnregister() {
     Making sure other classes are still able to read the value
     Despite it being inaccesible in a direct fashion 
 */
-HWND WndController::GetWndHWND() {
+HWND WndController::GetWndHWND() 
+{
     return hWnd_;
 };
 
-void WndController::MessageLoop() {
+void WndController::MessageLoop() 
+{
     MSG uMsg;
     while (::PeekMessage(&uMsg, nullptr, 0U, 0U, PM_REMOVE))
     {
