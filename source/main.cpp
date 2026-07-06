@@ -6,7 +6,7 @@
 #include "texturectrl.h"
 #include "spectral.h"
 #include "fftintel.h"
-//#include "workflow.h" //Workflow.cpp header file
+#include "workflow.h" //Workflow.cpp header file, comment out if you don't want to include this in your compiling
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
